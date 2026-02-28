@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -295,6 +295,9 @@
 		<Reference Include="Il2CppInterop.Common">
 			<HintPath>$(GamePath)\MelonLoader\net6\Il2CppInterop.Common.dll</HintPath>
 		</Reference>
+		<Reference Include="AudioImportLib">
+			<HintPath>$(GamePath)\Mods\AudioImportLib.dll</HintPath>
+		</Reference>
 
 	</ItemGroup>
 
@@ -304,9 +307,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Compile Include="AssetStore\AudioStore.cs" />
+		<Compile Include="AssetStore\FontStore.cs" />
 		<Compile Include="AssetStore\StringStore.cs" />
 		<Compile Include="AssetStore\TextureStore.cs" />
+		<Compile Include="FontHandler.cs" />
 		<Compile Include="Logger.cs" />
+		<Compile Include="ModFeatures.cs" />
 		<Compile Include="Utils.cs" />
 		<Compile Include="Core.cs" />
 		<Compile Include="FileLoader.cs" />

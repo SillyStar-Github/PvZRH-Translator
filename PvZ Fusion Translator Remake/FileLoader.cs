@@ -1,19 +1,16 @@
 ﻿using Il2Cpp;
 using MelonLoader;
 using PvZ_Fusion_Translator_Remake.AssetStore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace PvZ_Fusion_Translator_Remake
 {
     internal class FileLoader
     {
+        // Asset Type Handling
+
         internal enum AssetType
         {
             Textures,
@@ -29,6 +26,8 @@ namespace PvZ_Fusion_Translator_Remake
             return Path.Combine(Core.Instance.assetDirectory, languagePath, assetType.ToString());
         }
 
+        // Loading Strings
+        
         internal static void LoadStrings() => LoadStrings(Utils.Language);
 
         internal static void LoadStrings(Utils.LanguageEnum language)
@@ -146,6 +145,92 @@ namespace PvZ_Fusion_Translator_Remake
             }));
         }
 
+        // Loading Textures
+
+        internal static void LoadTextures() => LoadTextures(Utils.Language);
+
+        internal static void LoadTextures(Utils.LanguageEnum language)
+        {
+            try
+            {
+                if (Utils.customTextures)
+                {
+                    Logger.LogInfo("Loading custom textures...");
+                    LoadCustomTextures();
+                }
+
+                LoadLocalizedTextures(language);
+
+                Logger.LogInfo("Loaded textures successfully!");
+            }
+            catch (Exception e) 
+            {
+                Logger.LogError("Error loading textures!");
+                Logger.LogError($"{e.GetType()}: {e.Message}");
+            }
+        }
+
+        internal static void LoadLocalizedTextures(Utils.LanguageEnum language = Utils.LanguageEnum.English)
+        {
+            string textureDir = GetAssetDir(AssetType.Textures, language);
+            string spriteDir = GetAssetDir(AssetType.Sprites, language);
+
+            if(!Directory.Exists(textureDir))
+            {
+                Directory.CreateDirectory(textureDir);
+            }
+
+            try
+            {
+                foreach(string filePath in Directory.EnumerateFiles(textureDir, "*.png", SearchOption.AllDirectories))
+                {
+                    if(filePath.Contains("[Custom Textures]", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    byte[] texture2d = Utils.LoadImage(filePath);
+                    TextureStore.textureDict[Path.GetFileNameWithoutExtension(filePath)] = texture2d;
+                }
+
+                foreach(string filePath in Directory.EnumerateFiles(spriteDir, "*.png", SearchOption.AllDirectories))
+                {
+                    TextureStore.spriteList.Add(Path.GetFileNameWithoutExtension(filePath));
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError("Error loading localized textures!");
+                Logger.LogError($"{e.GetType()}: {e.Message}");
+            }
+        }
+
+        internal static void LoadCustomTextures()
+        {
+            string customTextureDir = Path.Combine(Core.Instance.assetDirectory, "[Custom Textures]");
+
+            if (!Directory.Exists(customTextureDir))
+            {
+                Directory.CreateDirectory(customTextureDir);
+            }
+
+            try
+            {
+                foreach(string filePath in Directory.EnumerateFiles(customTextureDir, "*.png", SearchOption.AllDirectories))
+                {
+                    byte[] texture2d = Utils.LoadImage(filePath);
+                    TextureStore.textureDict[Path.GetFileNameWithoutExtension(filePath)] = texture2d;
+                }
+            }
+            catch (Exception e) 
+            { 
+                Logger.LogError("Error loading custom textures!");
+                Logger.LogError($"{e.GetType()}: {e.Message}");
+            }
+        }
+
+        // Dumping Strings
+
         internal static void DumpJson()
         {
             string dumpDir = GetAssetDir(AssetType.Dumps);
@@ -204,7 +289,10 @@ namespace PvZ_Fusion_Translator_Remake
 				File.WriteAllText(jsonFile, JsonSerializer.Serialize(untranslatedStrings, options));
 			}
 		}
-		internal static void LoadLanguage()
+		
+        // Loading Language Settings
+        
+        internal static void LoadLanguage()
 		{
 			try
 			{
